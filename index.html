@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Sanctuary</title>
+
+  <!-- Firebase Compatibility SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #16161e;
+      --card-bg: rgba(26, 27, 38, 0.9);
+      --sidebar-bg: rgba(20, 21, 30, 0.95);
+      --accent: #f7768e;
+      --text: #c0caf5;
+      --text-muted: #565f89;
+      --mine: #7aa2f7;
+      --theirs: #24283b;
+      --border: rgba(255, 255, 255, 0.08);
+      --highlight: rgba(122, 162, 247, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #1f2335 0%, #101014 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+    }
+
+    .app-layout {
+      width: 100%;
+      max-width: 820px;
+      height: 92vh;
+      max-height: 780px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      display: flex;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Left Sidebar: Online Members */
+    .sidebar {
+      width: 220px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 18px 14px;
+      gap: 16px;
+      transition: transform 0.3s ease;
+      z-index: 10;
+    }
+
+    .sidebar-header {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .online-count {
+      background: rgba(158, 206, 106, 0.15);
+      color: #9ece6a;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+    }
+
+    .members-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .member-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--mine);
+      color: #1a1b26;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9ece6a;
+      box-shadow: 0 0 6px #9ece6a;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar-btn {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .sidebar-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Right Media Gallery Drawer */
+    .media-drawer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 320px;
+      background: var(--sidebar-bg);
+      border-left: 1px solid var(--border);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      z-index: 25;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    }
+
+    .media-drawer.open {
+      transform: translateX(0);
+    }
+
+    .media-drawer-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .media-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .media-tab-btn {
+      flex: 1;
+      padding: 10px 4px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .media-tab-btn.active {
+      color: var(--mine);
+      border-bottom-color: var(--mine);
+    }
+
+    .media-drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .gallery-item-img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      border: 1px solid var(--border);
+    }
+    .gallery-item-img:hover {
+      transform: scale(1.03);
+    }
+
+    .gallery-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .gallery-item-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.82rem;
+      word-break: break-all;
+    }
+
+    .gallery-item-card a {
+      color: var(--mine);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .gallery-item-card a:hover {
+      text-decoration: underline;
+    }
+
+    /* Main Chat Container */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .header {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      color: #9ece6a;
+      user-select: none;
+    }
+
+    .header-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9ece6a;
+      box-shadow: 0 0 6px #9ece6a;
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    .toggle-sidebar-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .header-icon-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1.15rem;
+      opacity: 0.7;
+      transition: opacity 0.2s, transform 0.1s;
+      padding: 4px;
+    }
+    .header-icon-btn:hover { opacity: 1; }
+    .header-icon-btn:active { transform: scale(0.95); }
+
+    /* Setup / Auth View */
+    #setup-view {
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      text-align: center;
+    }
+
+    .input-field {
+      width: 100%;
+      max-width: 280px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--mine);
+    }
+
+    .passcode-error {
+      color: var(--accent);
+      font-size: 0.8rem;
+      display: none;
+      animation: shake 0.3s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .btn {
+      background: var(--mine);
+      color: #1a1b26;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .bio-unlock-btn {
+      background: rgba(158, 206, 106, 0.2);
+      border: 1px solid rgba(158, 206, 106, 0.4);
+      color: #9ece6a;
+      margin-top: 4px;
+      display: none;
+    }
+
+    /* Messages Stream */
+    #chat-view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .bubble-wrapper {
+      display: flex;
+      flex-direction: column;
+      max-width: 82%;
+      position: relative;
+      transition: background-color 0.4s ease, opacity 0.2s ease;
+      border-radius: 16px;
+      padding: 2px;
+    }
+
+    .bubble-wrapper.flash-highlight {
+      background-color: var(--highlight);
+    }
+
+    .bubble-wrapper.mine {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .bubble-wrapper.theirs {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .sender-name {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+      padding: 0 4px;
+    }
+
+    .bubble-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .bubble-wrapper.mine .bubble-row {
+      flex-direction: row-reverse;
+    }
+
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .bubble.mine {
+      background: var(--mine);
+      color: #1a1b26;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bubble.theirs {
+      background: var(--theirs);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .bubble img.chat-img {
+      max-width: 220px;
+      max-height: 220px;
+      border-radius: 10px;
+      display: block;
+      margin-top: 4px;
+      cursor: pointer;
+    }
+
+    .bubble .doc-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: inherit;
+      font-weight: 500;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+
+    .msg-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .bubble-wrapper:hover .msg-actions {
+      opacity: 1;
+    }
+
+    .action-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.88rem;
+      padding: 3px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+
+    .action-icon-btn:hover {
+      color: var(--text);
+    }
+
+    .unsend-btn:hover {
+      color: #f7768e;
+    }
+
+    .quoted-preview {
+      background: rgba(0, 0, 0, 0.25);
+      border-left: 3px solid var(--accent);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      margin-bottom: 6px;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    .quoted-preview .quote-author {
+      font-weight: 600;
+      color: var(--accent);
+      margin-right: 4px;
+    }
+
+    .timestamp {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      padding: 0 4px;
+    }
+
+    audio {
+      height: 36px;
+      max-width: 230px;
+      outline: none;
+      filter: invert(0.85) hue-rotate(180deg);
+    }
+
+    .reply-drawer {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(20, 21, 30, 0.95);
+      border-top: 1px solid var(--border);
+      padding: 8px 16px;
+      font-size: 0.82rem;
+    }
+
+    .reply-drawer-content {
+      border-left: 3px solid var(--accent);
+      padding-left: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 85%;
+    }
+
+    .close-reply-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .input-container {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid var(--border);
+    }
+
+    .msg-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 10px 16px;
+      color: var(--text);
+      font-size: 0.92rem;
+      outline: none;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: none;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .icon-btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .icon-btn:active { transform: scale(0.95); }
+
+    .send-btn {
+      background: var(--accent);
+      color: #fff;
+    }
+    .send-btn:hover { background: #e06c75; }
+
+    .recording-indicator {
+      display: none;
+      flex: 1;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      background: rgba(247, 118, 142, 0.15);
+      border-radius: 20px;
+      border: 1px solid rgba(247, 118, 142, 0.3);
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    .rec-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @media (max-width: 600px) {
+      .sidebar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .toggle-sidebar-btn {
+        display: block;
+      }
+      .msg-actions {
+        opacity: 0.85;
+      }
+      .media-drawer {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- Members Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span>Online Now</span>
+      <span class="online-count" id="onlineCount">0</span>
+    </div>
+    <ul class="members-list" id="membersList"></ul>
+
+    <div class="sidebar-footer" id="sidebarFooter">
+      <button class="sidebar-btn" id="setupBioBtn" onclick="registerBiometrics()">
+        <span>🔒</span> Setup Biometric Lock
+      </button>
+      <button class="sidebar-btn" id="lockBtn" onclick="manualLock()">
+        <span>🚪</span> Lock Screen
+      </button>
+    </div>
+  </aside>
+
+  <!-- Shared Media Gallery Side Drawer -->
+  <div class="media-drawer" id="mediaDrawer">
+    <div class="media-drawer-header">
+      <span style="font-weight: 600; font-size: 0.95rem;">Shared Media</span>
+      <button class="header-icon-btn" onclick="toggleMediaDrawer()">✕</button>
+    </div>
+    <div class="media-tabs">
+      <button class="media-tab-btn active" id="tabPhotos" onclick="switchMediaTab('photos')">Photos (<span id="countPhotos">0</span>)</button>
+      <button class="media-tab-btn" id="tabLinks" onclick="switchMediaTab('links')">Links (<span id="countLinks">0</span>)</button>
+      <button class="media-tab-btn" id="tabDocs" onclick="switchMediaTab('docs')">Docs (<span id="countDocs">0</span>)</button>
+    </div>
+    <div class="media-drawer-body">
+      <div id="galleryPhotos" class="gallery-grid"></div>
+      <div id="galleryLinks" class="gallery-list" style="display: none;"></div>
+      <div id="galleryDocs" class="gallery-list" style="display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Chat Frame -->
+  <div class="chat-container">
+    <div class="header">
+      <div class="header-left">
+        <button class="toggle-sidebar-btn" id="toggleSidebar" title="Toggle active members">👥</button>
+        <span style="font-size: 0.95rem; font-weight: 500;">.</span>
+      </div>
+
+      <div class="header-right">
+        <div class="header-status-badge" id="headerStatusBadge">
+          <div class="header-status-dot"></div>
+          <span id="headerStatusText">0 Online</span>
+        </div>
+        <button class="header-icon-btn" onclick="toggleMediaDrawer()" title="Shared Media Gallery">🖼️</button>
+        <!-- Bell active for all members -->
+        <button class="header-icon-btn" id="notifBell" onclick="enableStealthNotifications()" title="Enable reminders">🔔</button>
+        <button class="header-icon-btn" id="soundBtn" title="Toggle ambient rain">🌧️</button>
+      </div>
+    </div>
+
+    <!-- Password & Biometric Gate Screen -->
+    <div id="setup-view">
+      <h3 style="font-weight: 500;" id="authTitle">Private Sanctuary</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 270px;" id="authSubtitle">
+        This space is confidential. Enter your passcode or use biometrics to unlock.
+      </p>
+
+      <button class="btn bio-unlock-btn" id="bioUnlockBtn" onclick="authenticateBiometrics()">
+        👆 Unlock with Biometrics
+      </button>
+
+      <div id="passwordSection" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 6px;">
+        <input type="text" id="usernameInput" class="input-field" placeholder="Your name..." autocomplete="off" />
+        <input type="password" id="passcodeInput" class="input-field" placeholder="Secret Passcode..." autocomplete="off" />
+        <span class="passcode-error" id="passcodeError">Incorrect passcode. Access denied.</span>
+        <button class="btn" onclick="authenticateAndEnter()">Unlock Space</button>
+      </div>
+    </div>
+
+    <!-- Active Chat View -->
+    <div id="chat-view">
+      <div class="messages" id="messagesContainer"></div>
+
+      <!-- Replying preview drawer -->
+      <div class="reply-drawer" id="replyDrawer">
+        <div class="reply-drawer-content">
+          Replying to <span id="replyTargetAuthor" style="font-weight: 600; color: var(--accent);"></span>: 
+          <span id="replyTargetText" style="color: var(--text-muted);"></span>
+        </div>
+        <button class="close-reply-btn" onclick="cancelReply()">✕</button>
+      </div>
+
+      <!-- Input controls -->
+      <form class="input-container" onsubmit="sendTextMessage(event)">
+        <input type="file" id="fileInput" style="display: none;" onchange="handleFileUpload(event)" />
+        <button type="button" class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Share photo or document">📎</button>
+
+        <input type="text" id="msgInput" class="msg-input" placeholder="Type a message..." autocomplete="off" />
+
+        <div class="recording-indicator" id="recIndicator">
+          <div class="rec-dot"></div>
+          <span id="recTimer">0:00</span>
+          <button type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: auto;" onclick="cancelRecording()">Cancel</button>
+        </div>
+
+        <button type="button" class="icon-btn" id="micBtn" onclick="toggleVoiceRecord()" title="Record Voice Note">🎙️</button>
+        <button type="submit" class="icon-btn send-btn" id="sendBtn" title="Send">➔</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const REQUIRED_PASSCODE = "031210";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPMQ1Eicgib1eONqmSxnNOWP7NkrdMO1A",
+    authDomain: "our-chat-d4fb4.firebaseapp.com",
+    databaseURL: "https://our-chat-d4fb4-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "our-chat-d4fb4",
+    storageBucket: "our-chat-d4fb4.firebasestorage.app",
+    messagingSenderId: "1005457515771",
+    appId: "1:1005457515771:web:4067346b9286fb3ccafc5e"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  
+  const messagesRef = db.ref('sanctuary_messages');
+  const presenceRef = db.ref('sanctuary_presence');
+  const biometricsRef = db.ref('sanctuary_biometrics');
+
+  let currentUser = localStorage.getItem('sanctuary_user') || '';
+  
+  function isBhonduUser() {
+    return currentUser.trim().toLowerCase() === 'her bhondu';
+  }
+
+  // Her Bhondu starts permanently unlocked; others start locked
+  let isUnlocked = isBhonduUser();
+  let activeReply = null;
+  let pageLoadTimestamp = Date.now();
+
+  const mediaStore = { photos: [], links: [], docs: [] };
+
+  // DOM Elements
+  const setupView = document.getElementById('setup-view');
+  const chatView = document.getElementById('chat-view');
+  const usernameInput = document.getElementById('usernameInput');
+  const passcodeInput = document.getElementById('passcodeInput');
+  const passcodeError = document.getElementById('passcodeError');
+  const bioUnlockBtn = document.getElementById('bioUnlockBtn');
+  const setupBioBtn = document.getElementById('setupBioBtn');
+  const lockBtn = document.getElementById('lockBtn');
+  const messagesContainer = document.getElementById('messagesContainer');
+  const msgInput = document.getElementById('msgInput');
+  const membersList = document.getElementById('membersList');
+  const onlineCount = document.getElementById('onlineCount');
+  const headerStatusText = document.getElementById('headerStatusText');
+  const sidebar = document.getElementById('sidebar');
+  const toggleSidebarBtn = document.getElementById('toggleSidebar');
+  const notifBell = document.getElementById('notifBell');
+  const mediaDrawer = document.getElementById('mediaDrawer');
+
+  // Replying Elements
+  const replyDrawer = document.getElementById('replyDrawer');
+  const replyTargetAuthor = document.getElementById('replyTargetAuthor');
+  const replyTargetText = document.getElementById('replyTargetText');
+
+  // Voice Elements
+  const micBtn = document.getElementById('micBtn');
+  const recIndicator = document.getElementById('recIndicator');
+  const recTimer = document.getElementById('recTimer');
+  const sendBtn = document.getElementById('sendBtn');
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let recordInterval = null;
+  let recordSeconds = 0;
+  let isRecording = false;
+
+  toggleSidebarBtn.onclick = () => sidebar.classList.toggle('open');
+
+  // --- Shared Media Drawer Methods ---
+  function toggleMediaDrawer() {
+    mediaDrawer.classList.toggle('open');
+  }
+
+  function switchMediaTab(tab) {
+    document.querySelectorAll('.media-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('galleryPhotos').style.display = 'none';
+    document.getElementById('galleryLinks').style.display = 'none';
+    document.getElementById('galleryDocs').style.display = 'none';
+
+    if (tab === 'photos') {
+      document.getElementById('tabPhotos').classList.add('active');
+      document.getElementById('galleryPhotos').style.display = 'grid';
+    } else if (tab === 'links') {
+      document.getElementById('tabLinks').classList.add('active');
+      document.getElementById('galleryLinks').style.display = 'flex';
+    } else if (tab === 'docs') {
+      document.getElementById('tabDocs').classList.add('active');
+      document.getElementById('galleryDocs').style.display = 'flex';
+    }
+  }
+
+  function registerMediaItem(data, key) {
+    if (data.type === 'photo' && data.fileData) {
+      if (!mediaStore.photos.some(p => p.key === key)) {
+        mediaStore.photos.unshift({ key, url: data.fileData, time: data.timestamp });
+        renderGalleryPhotos();
+      }
+    }
+    if (data.type === 'doc' && data.fileData) {
+      if (!mediaStore.docs.some(d => d.key === key)) {
+        mediaStore.docs.unshift({ key, name: data.fileName, url: data.fileData, time: data.timestamp });
+        renderGalleryDocs();
+      }
+    }
+    if (data.text) {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const matches = data.text.match(urlRegex);
+      if (matches) {
+        matches.forEach(url => {
+          if (!mediaStore.links.some(l => l.key === key && l.url === url)) {
+            mediaStore.links.unshift({ key, url, sender: data.sender, time: data.timestamp });
+            renderGalleryLinks();
+          }
+        });
+      }
+    }
+  }
+
+  function renderGalleryPhotos() {
+    const container = document.getElementById('galleryPhotos');
+    document.getElementById('countPhotos').innerText = mediaStore.photos.length;
+    container.innerHTML = mediaStore.photos.map(p => `
+      <img src="${p.url}" class="gallery-item-img" onclick="scrollToMessage('${p.key}'); toggleMediaDrawer();" title="Jump to message" />
+    `).join('');
+  }
+
+  function renderGalleryDocs() {
+    const container = document.getElementById('galleryDocs');
+    document.getElementById('countDocs').innerText = mediaStore.docs.length;
+    container.innerHTML = mediaStore.docs.map(d => `
+      <div class="gallery-item-card">
+        <a href="${d.url}" download="${d.name}">📄 ${d.name}</a>
+      </div>
+    `).join('');
+  }
+
+  function renderGalleryLinks() {
+    const container = document.getElementById('galleryLinks');
+    document.getElementById('countLinks').innerText = mediaStore.links.length;
+    container.innerHTML = mediaStore.links.map(l => `
+      <div class="gallery-item-card">
+        <a href="${l.url}" target="_blank" rel="noopener noreferrer">🔗 ${l.url}</a>
+        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Shared by ${l.sender}</div>
+      </div>
+    `).join('');
+  }
+
+  function handleFileUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2.5 * 1024 * 1024) {
+      alert("Please select files under 2.5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const base64 = evt.target.result;
+      const isImg = file.type.startsWith('image/');
+
+      const payload = {
+        sender: currentUser,
+        type: isImg ? 'photo' : 'doc',
+        fileData: base64,
+        fileName: file.name,
+        timestamp: Date.now()
+      };
+
+      if (activeReply) payload.replyTo = activeReply;
+      messagesRef.push(payload);
+      cancelReply();
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  // --- WebAuthn Helpers (for other members) ---
+  function bufferToBase64(buffer) {
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+  }
+
+  function base64ToBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
+  async function registerBiometrics() {
+    if (isBhonduUser()) {
+      alert("Biometric lock is disabled for Her Bhondu.");
+      return;
+    }
+
+    if (!window.PublicKeyCredential) {
+      alert("Biometric authentication (WebAuthn) is not supported on this browser.");
+      return;
+    }
+
+    try {
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+      const userIdBuffer = new TextEncoder().encode(currentUser);
+
+      const publicKey = {
+        challenge: challenge,
+        rp: { name: "Our Quiet Sanctuary", id: window.location.hostname },
+        user: {
+          id: userIdBuffer,
+          name: currentUser,
+          displayName: currentUser
+        },
+        pubKeyCredParams: [
+          { alg: -7, type: "public-key" },
+          { alg: -257, type: "public-key" }
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform",
+          userVerification: "required"
+        },
+        timeout: 60000
+      };
+
+      const credential = await navigator.credentials.create({ publicKey });
+      if (credential) {
+        const credId = bufferToBase64(credential.rawId);
+        const sanitizedUser = currentUser.replace(/[.#$\[\]]/g, "_");
+        await biometricsRef.child(sanitizedUser).set({
+          credentialId: credId,
+          registeredAt: Date.now()
+        });
+
+        localStorage.setItem('sanctuary_bio_enabled_' + sanitizedUser, 'true');
+        localStorage.setItem('sanctuary_bio_id_' + sanitizedUser, credId);
+
+        alert("Biometric Lock enabled! When you leave the screen, unlock with fingerprint or face scan.");
+        setupBioBtn.innerHTML = "<span>✅</span> Biometrics Active";
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Could not register biometrics: " + (err.message || "Cancelled"));
+    }
+  }
+
+  async function authenticateBiometrics() {
+    if (!currentUser || isBhonduUser()) return;
+    const sanitizedUser = currentUser.replace(/[.#$\[\]]/g, "_");
+
+    try {
+      let credId = localStorage.getItem('sanctuary_bio_id_' + sanitizedUser);
+      if (!credId) {
+        const snapshot = await biometricsRef.child(sanitizedUser).once('value');
+        const val = snapshot.val();
+        if (val && val.credentialId) credId = val.credentialId;
+      }
+
+      if (!credId) {
+        alert("No biometric profile found. Please unlock with passcode.");
+        return;
+      }
+
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+
+      const publicKey = {
+        challenge: challenge,
+        timeout: 60000,
+        userVerification: "required",
+        allowCredentials: [{
+          id: base64ToBuffer(credId),
+          type: "public-key",
+          transports: ["internal"]
+        }]
+      };
+
+      const assertion = await navigator.credentials.get({ publicKey });
+      if (assertion) {
+        isUnlocked = true;
+        checkAuth();
+      }
+    } catch (err) {
+      alert("Biometric verification cancelled or failed. Please use your passcode.");
+    }
+  }
+
+  async function checkBiometricsAvailability() {
+    if (!currentUser || isBhonduUser() || !window.PublicKeyCredential) {
+      bioUnlockBtn.style.display = 'none';
+      return;
+    }
+
+    const sanitizedUser = currentUser.replace(/[.#$\[\]]/g, "_");
+    const localBio = localStorage.getItem('sanctuary_bio_enabled_' + sanitizedUser);
+
+    if (localBio === 'true') {
+      bioUnlockBtn.style.display = 'block';
+      return;
+    }
+
+    const snapshot = await biometricsRef.child(sanitizedUser).once('value');
+    if (snapshot.exists()) {
+      localStorage.setItem('sanctuary_bio_enabled_' + sanitizedUser, 'true');
+      bioUnlockBtn.style.display = 'block';
+    } else {
+      bioUnlockBtn.style.display = 'none';
+    }
+  }
+
+  // --- Auto-Lock Listeners (Bypassed for Her Bhondu) ---
+  document.addEventListener('visibilitychange', () => {
+    if (isBhonduUser()) return;
+    if (document.hidden && isUnlocked) {
+      lockScreen();
+    }
+  });
+
+  window.addEventListener('blur', () => {
+    if (isBhonduUser()) return;
+    if (isUnlocked) {
+      lockScreen();
+    }
+  });
+
+  function lockScreen() {
+    if (isBhonduUser()) return;
+    isUnlocked = false;
+    checkAuth();
+  }
+
+  function manualLock() {
+    if (isBhonduUser()) {
+      alert("Locking is disabled on Her Bhondu's device.");
+      return;
+    }
+    lockScreen();
+    if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
+  }
+
+  // --- Disguised Stealth Notifications (Active for ALL Members) ---
+  function updateBellState() {
+    if (!('Notification' in window)) {
+      notifBell.style.display = 'none';
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      notifBell.style.opacity = '1';
+      notifBell.title = 'Reminders active';
+    } else {
+      notifBell.style.opacity = '0.5';
+      notifBell.title = 'Click to activate reminders';
+    }
+  }
+
+  function enableStealthNotifications() {
+    if (!('Notification' in window)) {
+      alert('This browser does not support desktop notifications.');
+      return;
+    }
+    Notification.requestPermission().then((permission) => {
+      updateBellState();
+      if (permission === 'granted') {
+        new Notification("System Reminder", {
+          body: "Background reminders enabled.",
+          silent: true
+        });
+      }
+    });
+  }
+
+  function triggerStealthNotification() {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    try {
+      new Notification("System Reminder", {
+        body: "Time for a break. Drink some water.",
+        tag: "wellness-reminder",
+        renotify: true
+      });
+    } catch (e) {
+      console.warn("Notification error:", e);
+    }
+  }
+
+  // --- Auth View State ---
+  function checkAuth() {
+    if (isBhonduUser()) {
+      isUnlocked = true;
+    }
+
+    if (isUnlocked) {
+      setupView.style.display = 'none';
+      chatView.style.display = 'flex';
+      setupPresence();
+      loadMessages();
+      updateBellState();
+
+      if (isBhonduUser()) {
+        if (setupBioBtn) setupBioBtn.style.display = 'none';
+        if (lockBtn) lockBtn.style.display = 'none';
+      }
+    } else {
+      setupView.style.display = 'flex';
+      chatView.style.display = 'none';
+      passcodeInput.value = '';
+      if (currentUser) {
+        usernameInput.value = currentUser;
+        checkBiometricsAvailability();
+      }
+    }
+  }
+
+  function authenticateAndEnter() {
+    const name = usernameInput.value.trim();
+    const pass = passcodeInput.value.trim();
+
+    if (!name) {
+      alert('Please enter your name.');
+      return;
+    }
+
+    if (pass !== REQUIRED_PASSCODE) {
+      passcodeError.style.display = 'block';
+      passcodeInput.value = '';
+      passcodeInput.focus();
+      return;
+    }
+
+    passcodeError.style.display = 'none';
+    currentUser = name;
+    localStorage.setItem('sanctuary_user', currentUser);
+    
+    isUnlocked = true;
+    checkAuth();
+  }
+
+  passcodeInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') authenticateAndEnter();
+  });
+
+  // --- Realtime Presence ---
+  function setupPresence() {
+    const userStatusRef = presenceRef.push();
+    const amOnline = db.ref('.info/connected');
+
+    amOnline.on('value', (snapshot) => {
+      if (snapshot.val() === false) return;
+      userStatusRef.onDisconnect().remove();
+      userStatusRef.set({
+        name: currentUser,
+        lastActive: Date.now()
+      });
+    });
+
+    presenceRef.on('value', (snapshot) => {
+      membersList.innerHTML = '';
+      const members = snapshot.val() || {};
+      const uniqueNames = new Set();
+
+      Object.values(members).forEach((m) => {
+        if (m && m.name) uniqueNames.add(m.name);
+      });
+
+      const count = uniqueNames.size;
+      onlineCount.innerText = count;
+      headerStatusText.innerText = `${count} Online`;
+
+      uniqueNames.forEach((name) => {
+        const li = document.createElement('li');
+        li.className = 'member-item';
+        li.innerHTML = `
+          <div class="member-avatar">${name[0].toUpperCase()}</div>
+          <span style="flex:1;">${name}</span>
+          <div class="status-dot"></div>
+        `;
+        membersList.appendChild(li);
+      });
+    });
+  }
+
+  // --- Reply System ---
+  function setReply(id, author, snippet) {
+    activeReply = { id, author, snippet };
+    replyTargetAuthor.innerText = author;
+    replyTargetText.innerText = snippet;
+    replyDrawer.style.display = 'flex';
+    msgInput.focus();
+  }
+
+  function cancelReply() {
+    activeReply = null;
+    replyDrawer.style.display = 'none';
+  }
+
+  function scrollToMessage(id) {
+    const target = document.getElementById('msg-' + id);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('flash-highlight');
+    setTimeout(() => target.classList.remove('flash-highlight'), 1200);
+  }
+
+  function silentlyUnsendMessage(key) {
+    messagesRef.child(key).remove();
+  }
+
+  // --- Text Messages ---
+  function sendTextMessage(e) {
+    e.preventDefault();
+    const text = msgInput.value.trim();
+    if (!text) return;
+
+    const payload = {
+      sender: currentUser,
+      type: 'text',
+      text: text,
+      timestamp: Date.now()
+    };
+
+    if (activeReply) {
+      payload.replyTo = activeReply;
+    }
+
+    messagesRef.push(payload);
+    msgInput.value = '';
+    cancelReply();
+  }
+
+  // --- Voice Notes ---
+  async function toggleVoiceRecord() {
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          if (!isRecording && audioChunks.length === 0) return;
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = () => {
+            const base64Audio = reader.result;
+            const payload = {
+              sender: currentUser,
+              type: 'voice',
+              audioData: base64Audio,
+              duration: recordSeconds,
+              timestamp: Date.now()
+            };
+            if (activeReply) payload.replyTo = activeReply;
+            messagesRef.push(payload);
+            cancelReply();
+          };
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        recordSeconds = 0;
+        recTimer.innerText = '0:00';
+        msgInput.style.display = 'none';
+        sendBtn.style.display = 'none';
+        recIndicator.style.display = 'flex';
+        micBtn.innerText = '⏹️';
+        micBtn.style.background = 'var(--accent)';
+
+        recordInterval = setInterval(() => {
+          recordSeconds++;
+          const mins = Math.floor(recordSeconds / 60);
+          const secs = recordSeconds % 60;
+          recTimer.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }, 1000);
+
+      } catch (err) {
+        alert('Please allow microphone access to record voice notes.');
+        console.error(err);
+      }
+    } else {
+      clearInterval(recordInterval);
+      mediaRecorder.stop();
+      resetRecUI();
+    }
+  }
+
+  function cancelRecording() {
+    if (mediaRecorder && isRecording) {
+      clearInterval(recordInterval);
+      audioChunks = [];
+      isRecording = false;
+      mediaRecorder.stop();
+      resetRecUI();
+    }
+  }
+
+  function resetRecUI() {
+    isRecording = false;
+    msgInput.style.display = 'block';
+    sendBtn.style.display = 'flex';
+    recIndicator.style.display = 'none';
+    micBtn.innerText = '🎙️';
+    micBtn.style.background = 'rgba(255, 255, 255, 0.08)';
+  }
+
+  // --- Real-time Message Stream ---
+  const loadedKeys = new Set();
+  function loadMessages() {
+    messagesRef.limitToLast(200).on('child_added', (snapshot) => {
+      const key = snapshot.key;
+      if (loadedKeys.has(key)) return;
+      loadedKeys.add(key);
+
+      const data = snapshot.val();
+      const isMine = data.sender.trim().toLowerCase() === currentUser.trim().toLowerCase();
+
+      registerMediaItem(data, key);
+
+      // Stealth notification triggers for ANY member as long as the message is incoming (not their own)
+      if (!isMine && data.timestamp > (pageLoadTimestamp - 2000)) {
+        triggerStealthNotification();
+      }
+
+      const wrapper = document.createElement('div');
+      wrapper.className = `bubble-wrapper ${isMine ? 'mine' : 'theirs'}`;
+      wrapper.id = 'msg-' + key;
+
+      const senderLabel = document.createElement('span');
+      senderLabel.className = 'sender-name';
+      senderLabel.innerText = isMine ? 'You' : data.sender;
+      wrapper.appendChild(senderLabel);
+
+      const bubbleRow = document.createElement('div');
+      bubbleRow.className = 'bubble-row';
+
+      const bubble = document.createElement('div');
+      bubble.className = `bubble ${isMine ? 'mine' : 'theirs'}`;
+
+      if (data.replyTo) {
+        const quoteDiv = document.createElement('div');
+        quoteDiv.className = 'quoted-preview';
+        quoteDiv.innerHTML = `<span class="quote-author">${data.replyTo.author}:</span> ${data.replyTo.snippet}`;
+        quoteDiv.onclick = () => scrollToMessage(data.replyTo.id);
+        bubble.appendChild(quoteDiv);
+      }
+
+      let snippetForReply = '';
+      if (data.type === 'voice') {
+        const audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = data.audioData;
+        bubble.appendChild(audio);
+        snippetForReply = '🎙️ Voice note';
+      } else if (data.type === 'photo') {
+        const img = document.createElement('img');
+        img.src = data.fileData;
+        img.className = 'chat-img';
+        img.onclick = () => window.open(data.fileData, '_blank');
+        bubble.appendChild(img);
+        snippetForReply = '📷 Photo';
+      } else if (data.type === 'doc') {
+        const doc = document.createElement('a');
+        doc.href = data.fileData;
+        doc.download = data.fileName;
+        doc.className = 'doc-link';
+        doc.innerHTML = `📄 ${data.fileName}`;
+        bubble.appendChild(doc);
+        snippetForReply = `📄 ${data.fileName}`;
+      } else {
+        const textSpan = document.createElement('span');
+        textSpan.innerText = data.text;
+        bubble.appendChild(textSpan);
+        snippetForReply = data.text;
+      }
+
+      bubbleRow.appendChild(bubble);
+
+      const actionsContainer = document.createElement('div');
+      actionsContainer.className = 'msg-actions';
+
+      const replyBtn = document.createElement('button');
+      replyBtn.className = 'action-icon-btn';
+      replyBtn.innerHTML = '↩';
+      replyBtn.title = 'Reply';
+      replyBtn.onclick = () => setReply(key, data.sender, snippetForReply);
+      actionsContainer.appendChild(replyBtn);
+
+      if (isMine && isBhonduUser()) {
+        const unsendBtn = document.createElement('button');
+        unsendBtn.className = 'action-icon-btn unsend-btn';
+        unsendBtn.innerHTML = '🗑️';
+        unsendBtn.title = 'Unsend silently';
+        unsendBtn.onclick = () => silentlyUnsendMessage(key);
+        actionsContainer.appendChild(unsendBtn);
+      }
+
+      bubbleRow.appendChild(actionsContainer);
+      wrapper.appendChild(bubbleRow);
+
+      const timeLabel = document.createElement('span');
+      timeLabel.className = 'timestamp';
+      const time = new Date(data.timestamp);
+      timeLabel.innerText = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + 
+        ' · ' + time.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      wrapper.appendChild(timeLabel);
+
+      messagesContainer.appendChild(wrapper);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    messagesRef.on('child_removed', (snapshot) => {
+      const key = snapshot.key;
+      loadedKeys.delete(key);
+      const el = document.getElementById('msg-' + key);
+      if (el) {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 200);
+      }
+    });
+  }
+
+  // Rain Sound Synthesizer
+  let audioCtx, noiseNode, isPlaying = false;
+  const soundBtn = document.getElementById('soundBtn');
+
+  soundBtn.onclick = () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!isPlaying) {
+      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let last = 0.0;
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (last + (0.02 * (Math.random() * 2 - 1))) / 1.02;
+        last = data[i];
+        data[i] *= 3;
+      }
+      noiseNode = audioCtx.createBufferSource();
+      noiseNode.buffer = buffer;
+      noiseNode.loop = true;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 750;
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.12;
+      noiseNode.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+      noiseNode.start();
+      soundBtn.style.opacity = '1';
+      soundBtn.innerText = '⏸️';
+      isPlaying = true;
+    } else {
+      noiseNode.stop();
+      soundBtn.style.opacity = '0.7';
+      soundBtn.innerText = '🌧️';
+      isPlaying = false;
+    }
+  };
+
+  checkAuth();
+</script>
+</body>
+</html>
