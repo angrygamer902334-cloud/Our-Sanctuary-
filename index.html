@@ -4,23 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Our Sanctuary</title>
-
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#12141d" />
+  
   <!-- Firebase Compatibility SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
     :root {
-      --bg: #16161e;
-      --card-bg: rgba(26, 27, 38, 0.9);
-      --sidebar-bg: rgba(20, 21, 30, 0.95);
-      --accent: #f7768e;
-      --text: #c0caf5;
-      --text-muted: #565f89;
-      --mine: #7aa2f7;
-      --theirs: #24283b;
-      --border: rgba(255, 255, 255, 0.08);
-      --highlight: rgba(122, 162, 247, 0.25);
+      /* Default: Sleek Neutral Midnight Slate */
+      --bg: #12141d;
+      --body-bg: radial-gradient(circle at 50% 15%, #1e2230 0%, #0e1017 100%);
+      --card-bg: rgba(24, 27, 38, 0.94);
+      --sidebar-bg: rgba(18, 20, 29, 0.96);
+      --accent: #8b9cf6;
+      --accent-soft: rgba(139, 156, 246, 0.14);
+      --text: #e2e6f3;
+      --text-muted: #7c859e;
+      --mine: linear-gradient(135deg, #7c8ff5 0%, #99a8fa 100%);
+      --theirs: #222636;
+      --border: rgba(139, 156, 246, 0.14);
+      --highlight: rgba(139, 156, 246, 0.25);
+      --brand-color: #b4c0fc;
+      --btn-text: #11131c;
+      --card-grad: linear-gradient(145deg, rgba(139, 156, 246, 0.12), rgba(34, 38, 54, 0.6));
+      --audio-filter: invert(0.86) hue-rotate(190deg);
+    }
+
+    /* Optional Romantic Theme (Toggle via 🎨 button) */
+    body.theme-rose {
+      --bg: #140b10;
+      --body-bg: radial-gradient(circle at 50% 15%, #2d1624 0%, #11080d 100%);
+      --card-bg: rgba(29, 16, 24, 0.92);
+      --sidebar-bg: rgba(22, 12, 18, 0.96);
+      --accent: #ff758f;
+      --accent-soft: rgba(255, 117, 143, 0.16);
+      --text: #fce8ee;
+      --text-muted: #a67c89;
+      --mine: linear-gradient(135deg, #ff758f 0%, #ff8fa3 100%);
+      --theirs: #2b1823;
+      --border: rgba(255, 143, 163, 0.14);
+      --highlight: rgba(255, 117, 143, 0.25);
+      --brand-color: #ffb3c1;
+      --btn-text: #1f0d16;
+      --card-grad: linear-gradient(145deg, rgba(255, 117, 143, 0.12), rgba(43, 24, 35, 0.6));
+      --audio-filter: invert(0.88) hue-rotate(310deg);
     }
 
     * {
@@ -31,67 +60,167 @@
     }
 
     body {
-      background: radial-gradient(circle at 50% 20%, #1f2335 0%, #101014 100%);
+      background: var(--body-bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 12px;
+      transition: background 0.35s ease, color 0.35s ease;
     }
 
+    /* ==========================================
+       PANIC CAMOUFLAGE STUDY SCREEN
+       ========================================== */
+    #panic-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #f8fafc;
+      color: #1e293b;
+      z-index: 99999;
+      overflow-y: auto;
+      padding: 36px 24px;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .study-container {
+      max-width: 780px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 32px 36px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .study-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .study-badge {
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .secret-return-trigger {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      cursor: pointer;
+      user-select: none;
+      padding: 2px 6px;
+    }
+
+    .study-container h1 {
+      font-size: 1.55rem;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .study-container h2 {
+      font-size: 1.15rem;
+      color: #1e293b;
+      margin-top: 22px;
+      margin-bottom: 8px;
+    }
+
+    .study-container p, .study-container li {
+      font-size: 0.98rem;
+      line-height: 1.7;
+      color: #334155;
+      margin-bottom: 10px;
+    }
+
+    .study-formula {
+      background: #f1f5f9;
+      border-left: 4px solid #475569;
+      padding: 12px 16px;
+      font-family: "Courier New", monospace;
+      font-size: 0.95rem;
+      margin: 14px 0;
+      color: #0f172a;
+    }
+
+    /* ==========================================
+       MAIN SANCTUARY APP LAYOUT
+       ========================================== */
     .app-layout {
       width: 100%;
-      max-width: 820px;
+      max-width: 840px;
       height: 92vh;
-      max-height: 780px;
+      max-height: 790px;
       background: var(--card-bg);
       backdrop-filter: blur(20px);
       border: 1px solid var(--border);
-      border-radius: 24px;
+      border-radius: 26px;
       display: flex;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.65);
       overflow: hidden;
       position: relative;
+      transition: background 0.35s ease, border-color 0.35s ease;
     }
 
-    /* Left Sidebar: Online Members */
+    /* Left Sidebar: Online Members & Together Counter */
     .sidebar {
-      width: 220px;
+      width: 235px;
       background: var(--sidebar-bg);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       padding: 18px 14px;
-      gap: 16px;
-      transition: transform 0.3s ease;
+      gap: 14px;
+      transition: transform 0.3s ease, background 0.35s ease;
       z-index: 10;
     }
 
+    .sidebar-brand {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--brand-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
     .sidebar-header {
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
     .online-count {
-      background: rgba(158, 206, 106, 0.15);
-      color: #9ece6a;
-      padding: 2px 7px;
+      background: var(--accent-soft);
+      color: var(--brand-color);
+      padding: 2px 8px;
       border-radius: 10px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
     }
 
     .members-list {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       overflow-y: auto;
       flex: 1;
     }
@@ -100,10 +229,11 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 0.9rem;
-      padding: 6px 8px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.02);
+      font-size: 0.88rem;
+      padding: 7px 9px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
     }
 
     .member-avatar {
@@ -111,25 +241,67 @@
       height: 28px;
       border-radius: 50%;
       background: var(--mine);
-      color: #1a1b26;
+      color: var(--btn-text);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
+      font-weight: 700;
       font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .admin-tag {
+      font-size: 0.65rem;
+      color: var(--brand-color);
+      background: var(--accent-soft);
+      padding: 1px 6px;
+      border-radius: 6px;
+      margin-left: 4px;
     }
 
     .status-dot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #9ece6a;
-      box-shadow: 0 0 6px #9ece6a;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Live Days Together Card */
+    .together-card {
+      background: var(--card-grad);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+
+    .together-title {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+
+    .together-days {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--brand-color);
+      margin-bottom: 3px;
+    }
+
+    .together-time {
+      font-size: 0.78rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      opacity: 0.9;
     }
 
     .sidebar-footer {
       border-top: 1px solid var(--border);
-      padding-top: 12px;
+      padding-top: 10px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -151,7 +323,7 @@
       transition: background 0.2s;
     }
     .sidebar-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--accent-soft);
     }
 
     /* Right Media Gallery Drawer */
@@ -168,7 +340,7 @@
       display: flex;
       flex-direction: column;
       z-index: 25;
-      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.6);
     }
 
     .media-drawer.open {
@@ -181,6 +353,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      color: var(--brand-color);
     }
 
     .media-tabs {
@@ -203,8 +376,8 @@
     }
 
     .media-tab-btn.active {
-      color: var(--mine);
-      border-bottom-color: var(--mine);
+      color: var(--accent);
+      border-bottom-color: var(--accent);
     }
 
     .media-drawer-body {
@@ -223,7 +396,7 @@
       width: 100%;
       height: 110px;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       transition: transform 0.2s;
       border: 1px solid var(--border);
@@ -241,14 +414,14 @@
     .gallery-item-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 10px;
       font-size: 0.82rem;
       word-break: break-all;
     }
 
     .gallery-item-card a {
-      color: var(--mine);
+      color: var(--brand-color);
       text-decoration: none;
       display: flex;
       align-items: center;
@@ -269,12 +442,12 @@
     }
 
     .header {
-      padding: 14px 18px;
+      padding: 13px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.02);
     }
 
     .header-left {
@@ -283,22 +456,35 @@
       gap: 10px;
     }
 
+    .header-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .admin-typing-indicator {
+      font-size: 0.74rem;
+      color: var(--accent);
+      font-style: italic;
+      min-height: 15px;
+      display: none;
+    }
+
     .header-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .header-status-badge {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--accent-soft);
       border: 1px solid var(--border);
       padding: 4px 10px;
       border-radius: 14px;
-      font-size: 0.78rem;
-      color: #9ece6a;
+      font-size: 0.76rem;
+      color: var(--brand-color);
       user-select: none;
     }
 
@@ -306,8 +492,8 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #9ece6a;
-      box-shadow: 0 0 6px #9ece6a;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
       animation: pulseDot 2s infinite;
     }
 
@@ -330,8 +516,8 @@
       background: transparent;
       border: none;
       cursor: pointer;
-      font-size: 1.15rem;
-      opacity: 0.7;
+      font-size: 1.12rem;
+      opacity: 0.78;
       transition: opacity 0.2s, transform 0.1s;
       padding: 4px;
     }
@@ -353,23 +539,24 @@
     .input-field {
       width: 100%;
       max-width: 280px;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.35);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 12px 16px;
       color: var(--text);
       font-size: 1rem;
       outline: none;
       text-align: center;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .input-field:focus {
-      border-color: var(--mine);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-soft);
     }
 
     .passcode-error {
-      color: var(--accent);
+      color: #ff5c77;
       font-size: 0.8rem;
       display: none;
       animation: shake 0.3s ease-in-out;
@@ -383,9 +570,9 @@
 
     .btn {
       background: var(--mine);
-      color: #1a1b26;
+      color: var(--btn-text);
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 12px 28px;
       font-weight: 600;
       font-size: 0.95rem;
@@ -398,9 +585,9 @@
     }
 
     .bio-unlock-btn {
-      background: rgba(158, 206, 106, 0.2);
-      border: 1px solid rgba(158, 206, 106, 0.4);
-      color: #9ece6a;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      color: var(--brand-color);
       margin-top: 4px;
       display: none;
     }
@@ -430,7 +617,7 @@
       max-width: 82%;
       position: relative;
       transition: background-color 0.4s ease, opacity 0.2s ease;
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 2px;
     }
 
@@ -451,8 +638,8 @@
     .sender-name {
       font-size: 0.72rem;
       color: var(--text-muted);
-      margin-bottom: 2px;
-      padding: 0 4px;
+      margin-bottom: 3px;
+      padding: 0 6px;
     }
 
     .bubble-row {
@@ -467,30 +654,33 @@
     }
 
     .bubble {
-      padding: 10px 14px;
-      border-radius: 16px;
-      font-size: 0.92rem;
-      line-height: 1.4;
+      padding: 10px 15px;
+      border-radius: 18px;
+      font-size: 0.93rem;
+      line-height: 1.42;
       word-break: break-word;
+      user-select: text;
+      position: relative;
     }
 
     .bubble.mine {
       background: var(--mine);
-      color: #1a1b26;
-      border-bottom-right-radius: 4px;
+      color: var(--btn-text);
+      font-weight: 500;
+      border-bottom-right-radius: 5px;
     }
 
     .bubble.theirs {
       background: var(--theirs);
       color: var(--text);
-      border-bottom-left-radius: 4px;
+      border-bottom-left-radius: 5px;
       border: 1px solid var(--border);
     }
 
     .bubble img.chat-img {
       max-width: 220px;
       max-height: 220px;
-      border-radius: 10px;
+      border-radius: 12px;
       display: block;
       margin-top: 4px;
       cursor: pointer;
@@ -505,8 +695,38 @@
       font-weight: 500;
       background: rgba(0, 0, 0, 0.2);
       padding: 6px 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-top: 4px;
+    }
+
+    /* Heart Reaction Pill */
+    .reaction-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--sidebar-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 0.74rem;
+      color: var(--brand-color);
+      margin-top: -6px;
+      z-index: 2;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      transition: transform 0.15s ease;
+    }
+
+    .reaction-badge:hover {
+      transform: scale(1.08);
+    }
+
+    .bubble-wrapper.mine .reaction-badge {
+      margin-right: 8px;
+    }
+
+    .bubble-wrapper.theirs .reaction-badge {
+      margin-left: 8px;
     }
 
     .msg-actions {
@@ -529,22 +749,23 @@
       font-size: 0.88rem;
       padding: 3px;
       border-radius: 4px;
-      transition: color 0.2s;
+      transition: color 0.2s, transform 0.1s;
     }
 
     .action-icon-btn:hover {
-      color: var(--text);
+      color: var(--brand-color);
+      transform: scale(1.1);
     }
 
     .unsend-btn:hover {
-      color: #f7768e;
+      color: #ff5c77;
     }
 
     .quoted-preview {
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.22);
       border-left: 3px solid var(--accent);
       padding: 4px 8px;
-      border-radius: 4px;
+      border-radius: 6px;
       font-size: 0.78rem;
       margin-bottom: 6px;
       cursor: pointer;
@@ -554,31 +775,35 @@
       max-width: 100%;
     }
 
+    .bubble.mine .quoted-preview {
+      background: rgba(0, 0, 0, 0.14);
+      border-left-color: var(--btn-text);
+    }
+
     .quoted-preview .quote-author {
       font-weight: 600;
-      color: var(--accent);
       margin-right: 4px;
     }
 
     .timestamp {
       font-size: 0.65rem;
       color: var(--text-muted);
-      margin-top: 2px;
-      padding: 0 4px;
+      margin-top: 3px;
+      padding: 0 6px;
     }
 
     audio {
       height: 36px;
       max-width: 230px;
       outline: none;
-      filter: invert(0.85) hue-rotate(180deg);
+      filter: var(--audio-filter);
     }
 
     .reply-drawer {
       display: none;
       align-items: center;
       justify-content: space-between;
-      background: rgba(20, 21, 30, 0.95);
+      background: var(--sidebar-bg);
       border-top: 1px solid var(--border);
       padding: 8px 16px;
       font-size: 0.82rem;
@@ -605,7 +830,7 @@
       padding: 10px 14px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       background: rgba(0, 0, 0, 0.25);
       border-top: 1px solid var(--border);
     }
@@ -614,17 +839,26 @@
       flex: 1;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 10px 16px;
       color: var(--text);
       font-size: 0.92rem;
       outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .msg-input:focus {
+      border-color: var(--accent);
+    }
+
+    .msg-input::placeholder {
+      color: var(--text-muted);
     }
 
     .icon-btn {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
       color: var(--text);
-      border: none;
+      border: 1px solid var(--border);
       border-radius: 50%;
       width: 38px;
       height: 38px;
@@ -635,14 +869,16 @@
       transition: background 0.2s, transform 0.1s;
     }
 
-    .icon-btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .icon-btn:hover { background: var(--accent-soft); }
     .icon-btn:active { transform: scale(0.95); }
 
     .send-btn {
-      background: var(--accent);
-      color: #fff;
+      background: var(--mine);
+      color: var(--btn-text);
+      border: none;
+      font-weight: bold;
     }
-    .send-btn:hover { background: #e06c75; }
+    .send-btn:hover { opacity: 0.92; }
 
     .recording-indicator {
       display: none;
@@ -650,18 +886,18 @@
       align-items: center;
       gap: 10px;
       padding: 6px 12px;
-      background: rgba(247, 118, 142, 0.15);
+      background: var(--accent-soft);
       border-radius: 20px;
-      border: 1px solid rgba(247, 118, 142, 0.3);
+      border: 1px solid var(--border);
       font-size: 0.85rem;
-      color: var(--accent);
+      color: var(--brand-color);
     }
 
     .rec-dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: var(--accent);
+      background: #ff5c77;
       animation: pulse 1s infinite;
     }
 
@@ -671,7 +907,7 @@
       100% { opacity: 1; transform: scale(1); }
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 640px) {
       .sidebar {
         position: absolute;
         top: 0;
@@ -696,16 +932,59 @@
 </head>
 <body>
 
-<div class="app-layout">
+<!-- ==========================================
+     PANIC CAMOUFLAGE OVERLAY (Press 'Esc' to Toggle)
+     ========================================== -->
+<div id="panic-screen">
+  <div class="study-container">
+    <div class="study-topbar">
+      <span class="study-badge">Class X Physics · Revision Notes</span>
+      <span class="secret-return-trigger" ondblclick="togglePanicMode()" title="Reference Index">π</span>
+    </div>
+    <h1>Chapter 4: Refraction of Light at Plane Surfaces</h1>
+    <p><strong>1. Refraction of Light:</strong> The change in direction of the path of light, when it passes from one transparent medium to another transparent medium, is called refraction of light. It is essentially a surface phenomenon.</p>
+    
+    <h2>2. Laws of Refraction (Snell's Law)</h2>
+    <ul>
+      <li>The incident ray, the refracted ray, and the normal at the point of incidence, all lie in the same plane.</li>
+      <li>The ratio of the sine of the angle of incidence <em>i</em> to the sine of the angle of refraction <em>r</em> is constant for the pair of given media.</li>
+    </ul>
+
+    <div class="study-formula">
+      Refractive Index (μ) = sin(i) / sin(r) = Speed of light in vacuum (c) / Speed of light in medium (v)
+    </div>
+
+    <h2>3. Factors Affecting Refractive Index</h2>
+    <p><strong>(a) Nature of the medium:</strong> Smaller the speed of light in a medium relative to air, higher is the refractive index of that medium (e.g., μ<sub>glass</sub> ≈ 1.5, μ<sub>water</sub> ≈ 1.33).</p>
+    <p><strong>(b) Physical condition (Temperature):</strong> With an increase in temperature, the speed of light in the medium increases, so the refractive index decreases.</p>
+    <p><strong>(c) Wavelength of light:</strong> Refractive index is maximum for violet light and minimum for red light in a given medium.</p>
+  </div>
+</div>
+
+<div class="app-layout" id="mainAppLayout">
   <!-- Members Sidebar -->
   <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span>💬</span> Our Sanctuary
+    </div>
+
     <div class="sidebar-header">
       <span>Online Now</span>
       <span class="online-count" id="onlineCount">0</span>
     </div>
     <ul class="members-list" id="membersList"></ul>
 
+    <!-- Live Together Counter (Since 28 August 2022, 11:36 AM) -->
+    <div class="together-card">
+      <div class="together-title">Together Since 28 Aug '22</div>
+      <div class="together-days" id="togetherDays">0 Days ❤️</div>
+      <div class="together-time" id="togetherTime">00h : 00m : 00s</div>
+    </div>
+
     <div class="sidebar-footer" id="sidebarFooter">
+      <button class="sidebar-btn" id="installAppBtn" style="display: none;" onclick="installDesktopApp()">
+        <span>💻</span> Install Desktop App
+      </button>
       <button class="sidebar-btn" id="setupBioBtn" onclick="registerBiometrics()">
         <span>🔒</span> Setup Biometric Lock
       </button>
@@ -718,7 +997,7 @@
   <!-- Shared Media Gallery Side Drawer -->
   <div class="media-drawer" id="mediaDrawer">
     <div class="media-drawer-header">
-      <span style="font-weight: 600; font-size: 0.95rem;">Shared Media</span>
+      <span style="font-weight: 600; font-size: 0.95rem;">Shared Memories</span>
       <button class="header-icon-btn" onclick="toggleMediaDrawer()">✕</button>
     </div>
     <div class="media-tabs">
@@ -737,8 +1016,11 @@
   <div class="chat-container">
     <div class="header">
       <div class="header-left">
-        <button class="toggle-sidebar-btn" id="toggleSidebar" title="Toggle active members">👥</button>
-        <span style="font-size: 0.95rem; font-weight: 500;">.</span>
+        <button class="toggle-sidebar-btn" id="toggleSidebar" title="Toggle active members">☰</button>
+        <div class="header-title-wrap">
+          <span style="font-size: 0.96rem; font-weight: 600; color: var(--brand-color);">Our Quiet Space</span>
+          <span class="admin-typing-indicator" id="adminTypingIndicator"></span>
+        </div>
       </div>
 
       <div class="header-right">
@@ -746,16 +1028,17 @@
           <div class="header-status-dot"></div>
           <span id="headerStatusText">0 Online</span>
         </div>
+        <button class="header-icon-btn" onclick="togglePanicMode()" title="Quick Study Mode (Esc)">🛡️</button>
+        <button class="header-icon-btn" id="themeBtn" onclick="toggleTheme()" title="Switch color mood">🎨</button>
         <button class="header-icon-btn" onclick="toggleMediaDrawer()" title="Shared Media Gallery">🖼️</button>
-        <!-- Bell active for all members -->
-        <button class="header-icon-btn" id="notifBell" onclick="enableStealthNotifications()" title="Enable reminders">🔔</button>
+        <button class="header-icon-btn" id="notifBell" onclick="enableStealthNotifications()" title="Enable high-priority reminders">🔔</button>
         <button class="header-icon-btn" id="soundBtn" title="Toggle ambient rain">🌧️</button>
       </div>
     </div>
 
     <!-- Password & Biometric Gate Screen -->
     <div id="setup-view">
-      <h3 style="font-weight: 500;" id="authTitle">Private Sanctuary</h3>
+      <h3 style="font-weight: 600; color: var(--brand-color);" id="authTitle">Private Sanctuary</h3>
       <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 270px;" id="authSubtitle">
         This space is confidential. Enter your passcode or use biometrics to unlock.
       </p>
@@ -806,7 +1089,67 @@
 </div>
 
 <script>
+  // ==========================================
+  // PWA SERVICE WORKER & DESKTOP INSTALL PROMPT
+  // ==========================================
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW reg skipped:', err));
+    });
+  }
+
+  let deferredInstallPrompt = null;
+  const installAppBtn = document.getElementById('installAppBtn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (installAppBtn) installAppBtn.style.display = 'flex';
+  });
+
+  async function installDesktopApp() {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      installAppBtn.style.display = 'none';
+    }
+    deferredInstallPrompt = null;
+  }
+
+  // ==========================================
+  // PANIC CAMOUFLAGE MODE ('Esc' Key)
+  // ==========================================
+  let isPanicActive = false;
+  const panicScreen = document.getElementById('panic-screen');
+  const mainAppLayout = document.getElementById('mainAppLayout');
+
+  function togglePanicMode() {
+    isPanicActive = !isPanicActive;
+    if (isPanicActive) {
+      panicScreen.style.display = 'block';
+      mainAppLayout.style.display = 'none';
+      document.title = 'Class 10 Physics Notes - Refraction of Light';
+      stopTabTitleAlert();
+    } else {
+      panicScreen.style.display = 'none';
+      mainAppLayout.style.display = 'flex';
+      document.title = 'Our Sanctuary';
+      if (isUnlocked && msgInput) msgInput.focus();
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      togglePanicMode();
+    }
+  });
+
+  // ==========================================
+  // FIREBASE CONFIG & CONSTANTS
+  // ==========================================
   const REQUIRED_PASSCODE = "031210";
+  const TOGETHER_START_TIME = new Date(2022, 7, 28, 11, 36, 0).getTime(); // 28 Aug 2022, 11:36 AM
 
   const firebaseConfig = {
     apiKey: "AIzaSyCPMQ1Eicgib1eONqmSxnNOWP7NkrdMO1A",
@@ -824,17 +1167,25 @@
   const messagesRef = db.ref('sanctuary_messages');
   const presenceRef = db.ref('sanctuary_presence');
   const biometricsRef = db.ref('sanctuary_biometrics');
+  const typingRef = db.ref('sanctuary_typing');
 
   let currentUser = localStorage.getItem('sanctuary_user') || '';
-  
-  function isBhonduUser() {
-    return currentUser.trim().toLowerCase() === 'her bhondu';
+
+  // Dual Admin Check ("Her Bhondu" and ".")
+  function isAdminUser(name = currentUser) {
+    const normalized = (name || '').trim().toLowerCase();
+    return normalized === 'her bhondu' || normalized === '.';
   }
 
-  // Her Bhondu starts permanently unlocked; others start locked
-  let isUnlocked = isBhonduUser();
+  function sanitizeKey(str) {
+    return (str || 'unknown').trim().toLowerCase().replace(/[.#$\[\]\/]/g, "_");
+  }
+
+  // Admins start permanently unlocked; non-admins start locked
+  let isUnlocked = isAdminUser();
   let activeReply = null;
   let pageLoadTimestamp = Date.now();
+  let typingTimeout = null;
 
   const mediaStore = { photos: [], links: [], docs: [] };
 
@@ -852,6 +1203,7 @@
   const membersList = document.getElementById('membersList');
   const onlineCount = document.getElementById('onlineCount');
   const headerStatusText = document.getElementById('headerStatusText');
+  const adminTypingIndicator = document.getElementById('adminTypingIndicator');
   const sidebar = document.getElementById('sidebar');
   const toggleSidebarBtn = document.getElementById('toggleSidebar');
   const notifBell = document.getElementById('notifBell');
@@ -874,6 +1226,138 @@
   let isRecording = false;
 
   toggleSidebarBtn.onclick = () => sidebar.classList.toggle('open');
+
+  // ==========================================
+  // THEME SWITCHER (Default: Midnight Slate | Optional: Velvet Rose)
+  // ==========================================
+  function applySavedTheme() {
+    const savedTheme = localStorage.getItem('sanctuary_theme') || 'slate';
+    if (savedTheme === 'rose') {
+      document.body.classList.add('theme-rose');
+    } else {
+      document.body.classList.remove('theme-rose');
+    }
+  }
+
+  function toggleTheme() {
+    const isRose = document.body.classList.toggle('theme-rose');
+    localStorage.setItem('sanctuary_theme', isRose ? 'rose' : 'slate');
+  }
+
+  applySavedTheme();
+
+  // ==========================================
+  // LIVE "DAYS TOGETHER" COUNTER
+  // ==========================================
+  function updateTogetherCounter() {
+    const now = Date.now();
+    const diff = Math.max(0, now - TOGETHER_START_TIME);
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    const pad = (n) => (n < 10 ? '0' + n : n);
+
+    document.getElementById('togetherDays').innerText = `${days} Days ❤️`;
+    document.getElementById('togetherTime').innerText = `${pad(hours)}h : ${pad(minutes)}m : ${pad(seconds)}s`;
+  }
+  setInterval(updateTogetherCounter, 1000);
+  updateTogetherCounter();
+
+  // ==========================================
+  // ADMIN-ONLY TYPING INDICATOR
+  // ==========================================
+  function setupTypingSystem() {
+    const userTypingKey = sanitizeKey(currentUser);
+    const myTypingNode = typingRef.child(userTypingKey);
+    myTypingNode.onDisconnect().remove();
+
+    msgInput.addEventListener('input', () => {
+      if (isAdminUser()) return;
+
+      if (msgInput.value.trim().length > 0) {
+        myTypingNode.set({
+          name: currentUser.trim(),
+          timestamp: Date.now()
+        });
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+          myTypingNode.remove();
+        }, 2500);
+      } else {
+        myTypingNode.remove();
+      }
+    });
+
+    if (isAdminUser()) {
+      typingRef.on('value', (snapshot) => {
+        const typers = snapshot.val() || {};
+        const activeTypers = [];
+        const now = Date.now();
+
+        Object.values(typers).forEach((entry) => {
+          if (entry && entry.name && !isAdminUser(entry.name) && (now - entry.timestamp < 5000)) {
+            activeTypers.push(entry.name);
+          }
+        });
+
+        if (activeTypers.length > 0) {
+          const namesStr = activeTypers.join(', ');
+          adminTypingIndicator.innerText = `${namesStr} ${activeTypers.length > 1 ? 'are' : 'is'} typing...`;
+          adminTypingIndicator.style.display = 'block';
+        } else {
+          adminTypingIndicator.style.display = 'none';
+          adminTypingIndicator.innerText = '';
+        }
+      });
+    }
+  }
+
+  function clearMyTypingStatus() {
+    if (!currentUser) return;
+    clearTimeout(typingTimeout);
+    typingRef.child(sanitizeKey(currentUser)).remove();
+  }
+
+  // ==========================================
+  // HEART REACTION TOGGLE
+  // ==========================================
+  function toggleHeartReaction(msgKey) {
+    if (!currentUser) return;
+    const userKey = sanitizeKey(currentUser);
+    const reactionNode = messagesRef.child(msgKey).child('hearts').child(userKey);
+
+    reactionNode.once('value', (snap) => {
+      if (snap.exists()) {
+        reactionNode.remove();
+      } else {
+        reactionNode.set(currentUser.trim());
+      }
+    });
+  }
+
+  function renderReactionBadge(wrapper, msgKey, heartsObj) {
+    let badge = wrapper.querySelector('.reaction-badge');
+    const heartUsers = heartsObj ? Object.values(heartsObj) : [];
+
+    if (heartUsers.length === 0) {
+      if (badge) badge.remove();
+      return;
+    }
+
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.className = 'reaction-badge';
+      badge.onclick = () => toggleHeartReaction(msgKey);
+      const timeEl = wrapper.querySelector('.timestamp');
+      wrapper.insertBefore(badge, timeEl);
+    }
+
+    badge.title = `Liked by: ${heartUsers.join(', ')}`;
+    badge.innerText = heartUsers.length > 1 ? `❤️ ${heartUsers.length}` : `❤️`;
+  }
 
   // --- Shared Media Drawer Methods ---
   function toggleMediaDrawer() {
@@ -984,7 +1468,7 @@
     e.target.value = '';
   }
 
-  // --- WebAuthn Helpers (for other members) ---
+  // --- WebAuthn Helpers (for non-admin members) ---
   function bufferToBase64(buffer) {
     return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
   }
@@ -999,8 +1483,8 @@
   }
 
   async function registerBiometrics() {
-    if (isBhonduUser()) {
-      alert("Biometric lock is disabled for Her Bhondu.");
+    if (isAdminUser()) {
+      alert("Biometric lock is disabled for Admins.");
       return;
     }
 
@@ -1036,7 +1520,7 @@
       const credential = await navigator.credentials.create({ publicKey });
       if (credential) {
         const credId = bufferToBase64(credential.rawId);
-        const sanitizedUser = currentUser.replace(/[.#$\[\]]/g, "_");
+        const sanitizedUser = sanitizeKey(currentUser);
         await biometricsRef.child(sanitizedUser).set({
           credentialId: credId,
           registeredAt: Date.now()
@@ -1055,8 +1539,8 @@
   }
 
   async function authenticateBiometrics() {
-    if (!currentUser || isBhonduUser()) return;
-    const sanitizedUser = currentUser.replace(/[.#$\[\]]/g, "_");
+    if (!currentUser || isAdminUser()) return;
+    const sanitizedUser = sanitizeKey(currentUser);
 
     try {
       let credId = localStorage.getItem('sanctuary_bio_id_' + sanitizedUser);
@@ -1096,12 +1580,12 @@
   }
 
   async function checkBiometricsAvailability() {
-    if (!currentUser || isBhonduUser() || !window.PublicKeyCredential) {
+    if (!currentUser || isAdminUser() || !window.PublicKeyCredential) {
       bioUnlockBtn.style.display = 'none';
       return;
     }
 
-    const sanitizedUser = currentUser.replace(/[.#$\[\]]/g, "_");
+    const sanitizedUser = sanitizeKey(currentUser);
     const localBio = localStorage.getItem('sanctuary_bio_enabled_' + sanitizedUser);
 
     if (localBio === 'true') {
@@ -1118,37 +1602,93 @@
     }
   }
 
-  // --- Auto-Lock Listeners (Bypassed for Her Bhondu) ---
+  // --- Auto-Lock Listeners (Bypassed for Admins: "Her Bhondu" & ".") ---
   document.addEventListener('visibilitychange', () => {
-    if (isBhonduUser()) return;
+    if (!document.hidden) stopTabTitleAlert();
+    if (isAdminUser()) return;
     if (document.hidden && isUnlocked) {
       lockScreen();
     }
   });
 
   window.addEventListener('blur', () => {
-    if (isBhonduUser()) return;
+    if (isAdminUser()) return;
     if (isUnlocked) {
       lockScreen();
     }
   });
 
   function lockScreen() {
-    if (isBhonduUser()) return;
+    if (isAdminUser()) return;
     isUnlocked = false;
     checkAuth();
   }
 
   function manualLock() {
-    if (isBhonduUser()) {
-      alert("Locking is disabled on Her Bhondu's device.");
+    if (isAdminUser()) {
+      alert("Locking is disabled on Admin devices.");
       return;
     }
     lockScreen();
     if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
   }
 
-  // --- Disguised Stealth Notifications (Active for ALL Members) ---
+  // ==========================================
+  // HIGH-PRIORITY DISGUISED STEALTH NOTIFICATIONS
+  // ==========================================
+  let originalTitle = document.title;
+  let titleBlinkInterval = null;
+  let unreadCount = 0;
+
+  function playSubtleAlertTone() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1174.66, ctx.currentTime + 0.12);
+      
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+    } catch (e) {
+      console.warn("Audio chime blocked until user interacts with page:", e);
+    }
+  }
+
+  function startTabTitleAlert() {
+    if (isPanicActive) return;
+    unreadCount++;
+    if (titleBlinkInterval) return;
+    let toggle = false;
+    titleBlinkInterval = setInterval(() => {
+      if (isPanicActive) {
+        stopTabTitleAlert();
+        return;
+      }
+      document.title = toggle ? `(${unreadCount}) System Update` : originalTitle;
+      toggle = !toggle;
+    }, 1000);
+  }
+
+  function stopTabTitleAlert() {
+    unreadCount = 0;
+    if (titleBlinkInterval) {
+      clearInterval(titleBlinkInterval);
+      titleBlinkInterval = null;
+    }
+    if (!isPanicActive) {
+      document.title = originalTitle;
+    }
+  }
+
+  window.addEventListener('focus', stopTabTitleAlert);
+
   function updateBellState() {
     if (!('Notification' in window)) {
       notifBell.style.display = 'none';
@@ -1156,10 +1696,10 @@
     }
     if (Notification.permission === 'granted') {
       notifBell.style.opacity = '1';
-      notifBell.title = 'Reminders active';
+      notifBell.title = 'High-Priority Reminders Active';
     } else {
       notifBell.style.opacity = '0.5';
-      notifBell.title = 'Click to activate reminders';
+      notifBell.title = 'Click to activate high-priority reminders';
     }
   }
 
@@ -1171,44 +1711,72 @@
     Notification.requestPermission().then((permission) => {
       updateBellState();
       if (permission === 'granted') {
-        new Notification("System Reminder", {
-          body: "Background reminders enabled.",
-          silent: true
+        playSubtleAlertTone();
+        const testNotif = new Notification("System Reminder", {
+          body: "High-priority background reminders enabled.",
+          requireInteraction: true
         });
+        testNotif.onclick = () => {
+          window.focus();
+          testNotif.close();
+        };
       }
     });
   }
 
   function triggerStealthNotification() {
+    if (document.hidden || !document.hasFocus() || isPanicActive) {
+      playSubtleAlertTone();
+      startTabTitleAlert();
+    }
+
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
     try {
-      new Notification("System Reminder", {
-        body: "Time for a break. Drink some water.",
-        tag: "wellness-reminder",
-        renotify: true
+      const notif = new Notification("System Reminder", {
+        body: "Time for a quick break. Drink some water.",
+        tag: "wellness-reminder-" + Date.now(),
+        renotify: true,
+        requireInteraction: true,
+        silent: false
       });
+
+      notif.onclick = () => {
+        window.focus();
+        notif.close();
+        stopTabTitleAlert();
+      };
     } catch (e) {
       console.warn("Notification error:", e);
     }
   }
 
   // --- Auth View State ---
+  let listenersInitialized = false;
+
   function checkAuth() {
-    if (isBhonduUser()) {
+    if (isAdminUser()) {
       isUnlocked = true;
     }
 
     if (isUnlocked) {
       setupView.style.display = 'none';
       chatView.style.display = 'flex';
-      setupPresence();
-      loadMessages();
+      
+      if (!listenersInitialized) {
+        listenersInitialized = true;
+        setupPresence();
+        setupTypingSystem();
+        loadMessages();
+      }
       updateBellState();
 
-      if (isBhonduUser()) {
+      if (isAdminUser()) {
         if (setupBioBtn) setupBioBtn.style.display = 'none';
         if (lockBtn) lockBtn.style.display = 'none';
+      } else {
+        if (setupBioBtn) setupBioBtn.style.display = 'flex';
+        if (lockBtn) lockBtn.style.display = 'flex';
       }
     } else {
       setupView.style.display = 'flex';
@@ -1279,9 +1847,10 @@
       uniqueNames.forEach((name) => {
         const li = document.createElement('li');
         li.className = 'member-item';
+        const adminBadge = isAdminUser(name) ? `<span class="admin-tag">Admin</span>` : '';
         li.innerHTML = `
           <div class="member-avatar">${name[0].toUpperCase()}</div>
-          <span style="flex:1;">${name}</span>
+          <span style="flex:1; display:flex; align-items:center;">${name}${adminBadge}</span>
           <div class="status-dot"></div>
         `;
         membersList.appendChild(li);
@@ -1315,7 +1884,7 @@
     messagesRef.child(key).remove();
   }
 
-  // --- Text Messages ---
+  // --- Direct Text Messages ---
   function sendTextMessage(e) {
     e.preventDefault();
     const text = msgInput.value.trim();
@@ -1334,6 +1903,7 @@
 
     messagesRef.push(payload);
     msgInput.value = '';
+    clearMyTypingStatus();
     cancelReply();
   }
 
@@ -1378,7 +1948,7 @@
         sendBtn.style.display = 'none';
         recIndicator.style.display = 'flex';
         micBtn.innerText = '⏹️';
-        micBtn.style.background = 'var(--accent)';
+        micBtn.style.background = '#ff5c77';
 
         recordInterval = setInterval(() => {
           recordSeconds++;
@@ -1414,7 +1984,7 @@
     sendBtn.style.display = 'flex';
     recIndicator.style.display = 'none';
     micBtn.innerText = '🎙️';
-    micBtn.style.background = 'rgba(255, 255, 255, 0.08)';
+    micBtn.style.background = 'rgba(255, 255, 255, 0.06)';
   }
 
   // --- Real-time Message Stream ---
@@ -1430,7 +2000,6 @@
 
       registerMediaItem(data, key);
 
-      // Stealth notification triggers for ANY member as long as the message is incoming (not their own)
       if (!isMine && data.timestamp > (pageLoadTimestamp - 2000)) {
         triggerStealthNotification();
       }
@@ -1449,12 +2018,17 @@
 
       const bubble = document.createElement('div');
       bubble.className = `bubble ${isMine ? 'mine' : 'theirs'}`;
+      bubble.ondblclick = () => toggleHeartReaction(key);
+      bubble.title = 'Double-click to heart';
 
       if (data.replyTo) {
         const quoteDiv = document.createElement('div');
         quoteDiv.className = 'quoted-preview';
         quoteDiv.innerHTML = `<span class="quote-author">${data.replyTo.author}:</span> ${data.replyTo.snippet}`;
-        quoteDiv.onclick = () => scrollToMessage(data.replyTo.id);
+        quoteDiv.onclick = (e) => {
+          e.stopPropagation();
+          scrollToMessage(data.replyTo.id);
+        };
         bubble.appendChild(quoteDiv);
       }
 
@@ -1469,7 +2043,10 @@
         const img = document.createElement('img');
         img.src = data.fileData;
         img.className = 'chat-img';
-        img.onclick = () => window.open(data.fileData, '_blank');
+        img.onclick = (e) => {
+          e.stopPropagation();
+          window.open(data.fileData, '_blank');
+        };
         bubble.appendChild(img);
         snippetForReply = '📷 Photo';
       } else if (data.type === 'doc') {
@@ -1492,6 +2069,13 @@
       const actionsContainer = document.createElement('div');
       actionsContainer.className = 'msg-actions';
 
+      const heartBtn = document.createElement('button');
+      heartBtn.className = 'action-icon-btn';
+      heartBtn.innerHTML = '❤️';
+      heartBtn.title = 'Heart message';
+      heartBtn.onclick = () => toggleHeartReaction(key);
+      actionsContainer.appendChild(heartBtn);
+
       const replyBtn = document.createElement('button');
       replyBtn.className = 'action-icon-btn';
       replyBtn.innerHTML = '↩';
@@ -1499,7 +2083,7 @@
       replyBtn.onclick = () => setReply(key, data.sender, snippetForReply);
       actionsContainer.appendChild(replyBtn);
 
-      if (isMine && isBhonduUser()) {
+      if (isMine && isAdminUser()) {
         const unsendBtn = document.createElement('button');
         unsendBtn.className = 'action-icon-btn unsend-btn';
         unsendBtn.innerHTML = '🗑️';
@@ -1518,8 +2102,21 @@
         ' · ' + time.toLocaleDateString([], { month: 'short', day: 'numeric' });
       wrapper.appendChild(timeLabel);
 
+      if (data.hearts) {
+        renderReactionBadge(wrapper, key, data.hearts);
+      }
+
       messagesContainer.appendChild(wrapper);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    messagesRef.on('child_changed', (snapshot) => {
+      const key = snapshot.key;
+      const data = snapshot.val();
+      const wrapper = document.getElementById('msg-' + key);
+      if (wrapper && data) {
+        renderReactionBadge(wrapper, key, data.hearts);
+      }
     });
 
     messagesRef.on('child_removed', (snapshot) => {
@@ -1565,7 +2162,7 @@
       isPlaying = true;
     } else {
       noiseNode.stop();
-      soundBtn.style.opacity = '0.7';
+      soundBtn.style.opacity = '0.78';
       soundBtn.innerText = '🌧️';
       isPlaying = false;
     }
